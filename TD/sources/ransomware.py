@@ -39,7 +39,7 @@ class Ransomware:
         # At first, we check if we are in a docker
         # to prevent running this program outside of container
         hostname = socket.gethostname()
-        result = re.match("[0-9a-f]{6,6}", hostname)
+        result = re.match("[0-9a-f]{6}", hostname)
         if result is None:
             print(f"You must run the malware in docker ({hostname}) !")
             sys.exit(1)
