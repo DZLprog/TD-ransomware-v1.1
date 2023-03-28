@@ -9,6 +9,7 @@ import base64
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from TD.sources.ransomware import ITERATIONS, KEY_LENGTH
 
 from xorcrypt import xorfile
 
@@ -28,12 +29,23 @@ class SecretManager:
         self._log = logging.getLogger(self.__class__.__name__)
 
     def do_derivation(self, salt:bytes, key:bytes)->bytes:
-        raise NotImplemented()
+        # derive a key from the salt and the key
+        salt = bytes("16", "utf8")
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=KEY_LENGTH,
+            salt=salt,
+            iterations=ITERATIONS)
+        key = kdf.derive(key) # derive the key
+        return key
 
 
     def create(self)->Tuple[bytes, bytes, bytes]:
-        raise NotImplemented()
-
+        # Generate a random salt and private key, and derive the encryption key
+        salt = secrets.token_bytes(16)
+        key = secrets.token_bytes(32)
+        encryption_key = self.do_derivation(salt, key)
+        return salt, key, encryption_key
 
     def bin_to_b64(self, data:bytes)->str:
         tmp = base64.b64encode(data)
