@@ -75,7 +75,7 @@ class Ransomware:
             print("Files have been decrypted")
             sys.exit(0) 
         else:
-            print("Error: Wrong key")
+            print("Wrong key")
             # ask for the key again
             self.decrypt()
 
