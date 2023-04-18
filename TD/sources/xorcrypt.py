@@ -5,6 +5,7 @@ def xorcrypt(data:bytes, key:bytes)->bytes:
     # encrypt and decrypt bytes
     
     # Loop the key (abc become abcabcabcab....)
+
     infinite_key = cycle(key)
     # create couple from data and key.
     match = zip(data, infinite_key)
@@ -24,5 +25,6 @@ def xorfile(filename:str, key:bytes)->bytes:
     encrypted = xorcrypt(plain, key)
 
     # write the result on the same file
+
     with open(filename, "wb") as f:
         f.write(encrypted)
